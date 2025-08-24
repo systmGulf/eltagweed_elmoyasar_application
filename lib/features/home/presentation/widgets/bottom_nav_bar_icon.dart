@@ -13,14 +13,22 @@ BottomNavigationBarItem customBottomNavBarIcon(
           color: AppColors.thirdColor,
           borderRadius: BorderRadius.circular(10),
         ),
-        child: SvgPicture.asset(
-          icon,
-          color: Colors.white,
+        child: SizedBox(
+          height: 28.h,
+          width: 28.w,
+          child: SvgPicture.asset(
+            icon,
+            color: Colors.white,
+          ),
         )),
-    icon: SvgPicture.asset(
-      icon,
-      color: Colors.black,
-      height: 28.h,
+    icon: SizedBox(
+      height: 30.h,
+      width: 28.w,
+      child: SvgPicture.asset(
+        icon,
+        color: Colors.black,
+        height: 28.h,
+      ),
     ),
     label: label,
   );

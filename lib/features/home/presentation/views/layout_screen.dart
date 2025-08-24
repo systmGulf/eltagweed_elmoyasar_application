@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:eltagweed_elmoyasar/core/helpers/app_size.dart';
 import 'package:eltagweed_elmoyasar/core/styles/app_text_styles.dart';
 import 'package:eltagweed_elmoyasar/features/home/presentation/views/books_screen.dart';
+import 'package:eltagweed_elmoyasar/features/home/presentation/views/questions_screen.dart';
 import 'package:eltagweed_elmoyasar/features/home/presentation/views/records_screen.dart';
 import 'package:eltagweed_elmoyasar/features/home/presentation/views/videos_screen.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +14,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/styles/app_colors.dart';
 import '../widgets/bottom_nav_bar_icon.dart';
 import '../widgets/custom_drawer.dart';
-import '../widgets/home_grid_view.dart';
 import 'home_screen.dart';
 
 class LayoutScreen extends StatefulWidget {
@@ -29,6 +29,7 @@ class _LayoutScreenState extends State<LayoutScreen> {
   @override
   Widget build(BuildContext context) {
     List<Widget> screens = [
+      const QuestionsScreen(),
       const VideosScreen(),
       const BooksScreen(),
       const RecordsScreen(),
@@ -36,7 +37,7 @@ class _LayoutScreenState extends State<LayoutScreen> {
     ];
     return Scaffold(
       key: scaffoldKey,
-    drawer: CustomDrawer(),
+      drawer: const CustomDrawer(),
       bottomNavigationBar: IntrinsicHeight(
         child: BottomNavigationBar(
           onTap: (value) {
@@ -57,6 +58,8 @@ class _LayoutScreenState extends State<LayoutScreen> {
           elevation: 4,
           items: [
             customBottomNavBarIcon(
+                icon: 'assets/svg/question.svg', label: "الاسئلة الشائعة"),
+            customBottomNavBarIcon(
                 icon: 'assets/svg/Video.svg', label: "الفديوهات"),
             customBottomNavBarIcon(icon: 'assets/svg/book.svg', label: "الكتب"),
             customBottomNavBarIcon(
@@ -70,3 +73,4 @@ class _LayoutScreenState extends State<LayoutScreen> {
     );
   }
 }
+// assets/svg/question.svg

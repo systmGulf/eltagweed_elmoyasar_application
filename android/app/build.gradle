@@ -32,30 +32,31 @@ keystoreProperties['keyPassword'] = 25595568
 keystoreProperties['keyAlias'] = "upload"
 keystoreProperties['storeFile'] = file("../../android/upload-keystore.jks") 
 
-
 android {
-     
     namespace = "com.example.eltagweed_elmoyasar"
-    compileSdk = 34
+    compileSdk = 35
     ndkVersion = flutter.ndkVersion
-     signingConfigs {
+
+    signingConfigs {
         release {
             keyAlias = keystoreProperties['keyAlias']
             keyPassword = keystoreProperties['keyPassword']
             storeFile = keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
             storePassword = keystoreProperties['storePassword']
-        }}
+        }
+    }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = "11"
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.eltagweed_elmoyasar"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutterVersionCode.toInteger()
@@ -70,8 +71,6 @@ android {
             signingConfig = signingConfigs.release
         }
     }
-    
-        
 }
 
 flutter {
