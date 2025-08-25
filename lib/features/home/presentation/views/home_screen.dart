@@ -1,3 +1,5 @@
+import 'package:eltagweed_elmoyasar/features/home/presentation/views/matn_elgazarya_screen.dart';
+import 'package:eltagweed_elmoyasar/features/home/presentation/views/matn_tofet_elatfal_screen.dart';
 import 'package:eltagweed_elmoyasar/features/home/presentation/widgets/tablet_home_screen_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -57,10 +59,85 @@ class HomeScreen extends StatelessWidget {
                   SizedBox(
                     height: 10.h,
                   ),
-                  // const CompetitionAnnouncement(),
-                  // SizedBox(
-                  //   height: 20.h,
-                  // ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Text("متن الجزرية",
+                                style:
+                                    AppTextStyles.font20Weight700White.copyWith(
+                                  color: AppColors.secondaryColor,
+                                )),
+                            verticalSpace(10),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const MatnElgazaryaScreen()));
+                              },
+                              child: Container(
+                                height: 180.h,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  color: AppColors.secondaryColor,
+                                  border: Border.all(
+                                      color: AppColors.secondaryColor,
+                                      width: 2.w),
+                                  image: const DecorationImage(
+                                    image: AssetImage(
+                                        "assets/images/elgzara.jpeg"),
+                                    fit: BoxFit.fill,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      horizontalSpace(20),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Text("متن التحفة الأطفال",
+                                style:
+                                    AppTextStyles.font20Weight700White.copyWith(
+                                  color: AppColors.secondaryColor,
+                                )),
+                            verticalSpace(10),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const MatnTofetElatfalScreen()));
+                              },
+                              child: Container(
+                                height: 180.h,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  color: AppColors.secondaryColor,
+                                  border: Border.all(
+                                      color: AppColors.secondaryColor,
+                                      width: 2.w),
+                                  image: const DecorationImage(
+                                    image: AssetImage(
+                                      "assets/images/rawdt_elatfal.jpeg",
+                                    ),
+                                    fit: BoxFit.fill,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  verticalSpace(20),
                 ],
               ),
             ),

@@ -24,7 +24,7 @@ class LayoutScreen extends StatefulWidget {
 }
 
 class _LayoutScreenState extends State<LayoutScreen> {
-  int selectedIndex = 3;
+  int selectedIndex = 4;
 
   @override
   Widget build(BuildContext context) {

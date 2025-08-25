@@ -9,9 +9,11 @@ class SingleVideoContainer extends StatelessWidget {
     required this.title,
     required this.subtitle,
     this.onTap,
+    this.image,
   });
   final String title, subtitle;
   final void Function()? onTap;
+  final ImageProvider<Object>? image;
 
   @override
   Widget build(BuildContext context) {
@@ -35,8 +37,10 @@ class SingleVideoContainer extends StatelessWidget {
                     height: 100.h,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12.r),
-                      image: const DecorationImage(
-                        image: AssetImage('assets/images/youtube_image.jpeg'),
+                      image: DecorationImage(
+                        image: image ??
+                            const AssetImage(
+                                'assets/images/youtube_image.jpeg'),
                         fit: BoxFit.fill,
                       ),
                     ),

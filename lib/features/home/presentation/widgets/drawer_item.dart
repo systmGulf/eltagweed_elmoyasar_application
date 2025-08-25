@@ -1,6 +1,7 @@
 import 'package:eltagweed_elmoyasar/core/styles/app_text_styles.dart';
 import 'package:eltagweed_elmoyasar/core/widgets/drawer_divider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 
 class DrawerItem extends StatelessWidget {
@@ -26,8 +27,10 @@ class DrawerItem extends StatelessWidget {
           children: [
             SvgPicture.asset(
               image,
+              height: 30.h,
               width: isCustomImage ? imageWidth : null,
               color: isCustomImage ? imageColor : null,
+              theme: const SvgTheme(currentColor: Colors.red),
             ),
             TextButton(
               onPressed: onTap,

@@ -10,10 +10,13 @@ class QuestionsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.primaryColor,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        surfaceTintColor: Colors.transparent,
         backgroundColor: AppColors.primaryColor, // No Color
         title: Text(
-          'الاسئلة الشائعة',
+          'الاسئلة في التجويد',
           style: AppTextStyles.font20Weight700SecondaryColor,
         ),
         centerTitle: true,
