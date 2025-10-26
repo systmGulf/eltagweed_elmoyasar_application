@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.1+2
+version: 2.0.3
 
 environment:
   sdk: '>=3.4.3 <4.0.0'
@@ -32,8 +32,8 @@ dependencies:
   cloud_firestore: ^5.4.2
   connectivity_plus: ^6.0.5
   cupertino_icons: ^1.0.6
-  device_info_plus: ^10.1.2
   firebase_core: ^3.5.0
+  upgrader: ^12.1.0
   flutter:
     sdk: flutter
   flutter_screenutil: ^5.9.3
@@ -42,7 +42,7 @@ dependencies:
   modal_progress_hud_nsn: ^0.5.1
   share_plus: ^10.1.1
   shared_preferences: ^2.3.2
-  syncfusion_flutter_pdfviewer: ^26.2.9
+  syncfusion_flutter_pdfviewer: ^27.1.48
   url_launcher: ^6.3.0
   video_player: ^2.9.1
   webview_flutter: ^4.10.0
@@ -68,7 +68,8 @@ flutter:
     - assets/svg/
     - assets/pdf/
     - assets/videos/video.mp4
-
+    - assets/tajweed_questions.json
+    
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
   # For details regarding adding assets from package dependencies, see

@@ -114,6 +114,71 @@ class _VideosScreenState extends State<VideosScreen> {
           }
         },
       ),
+      SingleVideoContainer(
+        image: const AssetImage('assets/images/studio_square_thumbnail.jpg'),
+        title: 'متن تحفة الأطفال بصوت محمد حمزة البرماوى',
+        subtitle: 'Mohammed Hamza | التَجـويِد الـمُـيـسَّـر ',
+        onTap: () async {
+          isLoading = true;
+
+          setState(() {});
+          var internet = await CommonMethods().checkConnectivity(context);
+          if (internet) {
+            if (await launchUrl(Uri.parse(
+                'https://www.youtube.com/playlist?list=PLDO2GIcBczhmcAeFibxnyre9yxVW6TOhY'))) {
+              isLoading = false;
+              setState(() {});
+              throw Exception('Could not launch ');
+            }
+          } else {
+            isLoading = false;
+            setState(() {});
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: AppColors.secondaryColor,
+                content: Text(
+                  'لا يوجد اتصال بالانترنت',
+                  style: AppTextStyles.font16Weight400Red,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
+          }
+        },
+      ),
+      SingleVideoContainer(
+        image:
+            const AssetImage('assets/images/studio_square_thumbnail (1).jpg'),
+        title: 'متن الجزرية بصوت محمد حمزة البرماوى',
+        subtitle: 'Mohammed Hamza | التَجـويِد الـمُـيـسَّـر ',
+        onTap: () async {
+          isLoading = true;
+
+          setState(() {});
+          var internet = await CommonMethods().checkConnectivity(context);
+          if (internet) {
+            if (await launchUrl(Uri.parse(
+                'https://www.youtube.com/playlist?list=PLDO2GIcBczhmfDmIBqgl0s_q6KMgyHV9f'))) {
+              isLoading = false;
+              setState(() {});
+              throw Exception('Could not launch ');
+            }
+          } else {
+            isLoading = false;
+            setState(() {});
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: AppColors.secondaryColor,
+                content: Text(
+                  'لا يوجد اتصال بالانترنت',
+                  style: AppTextStyles.font16Weight400Red,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
+          }
+        },
+      )
     ];
     return Scaffold(
       body: ModalProgressHUD(

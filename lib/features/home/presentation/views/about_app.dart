@@ -20,7 +20,7 @@ class _AboutAppState extends State<AboutApp> {
     super.initState();
     _videoController = VideoPlayerController.asset('assets/videos/video.mp4')
       ..initialize().then((_) {
-        setState(() {}); // Ensure the first frame is shown after the video is initialized.
+        setState(() {}); 
       });
   }
 

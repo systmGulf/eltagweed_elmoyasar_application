@@ -12,6 +12,7 @@ import 'package:connectivity_plus/src/connectivity_plus_web.dart';
 import 'package:device_info_plus/src/device_info_plus_web.dart';
 import 'package:firebase_core_web/firebase_core_web.dart';
 import 'package:just_audio_web/just_audio_web.dart';
+import 'package:package_info_plus/src/package_info_plus_web.dart';
 import 'package:share_plus/src/share_plus_web.dart';
 import 'package:shared_preferences_web/shared_preferences_web.dart';
 import 'package:syncfusion_pdfviewer_web/pdfviewer_web.dart';
@@ -27,6 +28,7 @@ void registerPlugins([final Registrar? pluginRegistrar]) {
   DeviceInfoPlusWebPlugin.registerWith(registrar);
   FirebaseCoreWeb.registerWith(registrar);
   JustAudioPlugin.registerWith(registrar);
+  PackageInfoPlusWebPlugin.registerWith(registrar);
   SharePlusWebPlugin.registerWith(registrar);
   SharedPreferencesPlugin.registerWith(registrar);
   SyncfusionFlutterPdfViewerPlugin.registerWith(registrar);
