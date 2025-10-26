@@ -1,17 +1,20 @@
-import 'dart:io';
-
 import 'package:eltagweed_elmoyasar/core/styles/app_colors.dart';
 import 'package:eltagweed_elmoyasar/features/home/presentation/views/layout_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:upgrader/upgrader.dart';
 
+// final Upgrader upgrader = Upgrader(
+//     debugDisplayAlways: true,
+//     debugLogging: true,
+//     messages: UpgraderMessages(code: 'ar'));
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ScreenUtil.ensureScreenSize();
   await Firebase.initializeApp();
+  // upgrader.initialize();
 
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,

@@ -11,14 +11,14 @@ plugins {
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
-    localPropertiesFile.withReader("UTF-8") { reader ->
+    localPropertiesFile.withReader("UTF-8") { reader -> 
         localProperties.load(reader)
     }
 }
 
 def flutterVersionCode = localProperties.getProperty("flutter.versionCode")
 if (flutterVersionCode == null) {
-    flutterVersionCode = "6"
+    flutterVersionCode = "7"
 }
 
 def flutterVersionName = localProperties.getProperty("flutter.versionName")
@@ -30,7 +30,7 @@ def keystoreProperties = new Properties()
 keystoreProperties['storePassword'] = 25595568
 keystoreProperties['keyPassword'] = 25595568
 keystoreProperties['keyAlias'] = "upload"
-keystoreProperties['storeFile'] = file("../../android/upload-keystore.jks") 
+keystoreProperties['storeFile'] = file("../../android/upload-keystore.jks")
 
 android {
     namespace = "com.example.eltagweed_elmoyasar"
@@ -75,4 +75,9 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // ✅ أجبر R8 يستخدم نسخة حديثة تدعم Metadata 2.1.0
+    implementation "org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.9.0"
 }

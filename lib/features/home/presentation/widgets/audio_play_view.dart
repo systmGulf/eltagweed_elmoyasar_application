@@ -23,11 +23,33 @@ class _AudioPlayerViewState extends State<AudioPlayerView> {
   late final Future loadAudio;
   double? sliderTempValue;
 
+  bool isRepeating = false;
+  int repeatCount = 0;
+  int maxRepeats = 3;
+
   @override
   void initState() {
+    super.initState();
     loadAudio = audioPlayerController.loadAudio(widget.path);
 
-    super.initState();
+    audioPlayerController.onComplete = () async {
+      if (isRepeating) {
+        if (repeatCount < maxRepeats - 1) {
+          repeatCount++;
+          audioPlayerController.seek(0);
+          audioPlayerController.play();
+          setState(() {});
+        } else {
+          // انتهت كل مرات التكرار → إيقاف وإخفاء النص
+          setState(() {
+            isRepeating = false;
+            repeatCount = 0;
+          });
+          audioPlayerController.pause();
+          audioPlayerController.seek(0);
+        }
+      }
+    };
   }
 
   @override
@@ -43,16 +65,18 @@ class _AudioPlayerViewState extends State<AudioPlayerView> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
-              child: CircularProgressIndicator(
-            color: AppColors.primaryColor,
-            backgroundColor: AppColors.secondaryColor,
-            strokeWidth: 3,
-          ));
+            child: CircularProgressIndicator(
+              color: AppColors.primaryColor,
+              backgroundColor: AppColors.secondaryColor,
+              strokeWidth: 3,
+            ),
+          );
         }
 
         if (snapshot.hasError) {
           return const Center(
-              child: Text('خطأ في تشغيل التسجيل تحقق من اتصالك بالانترنت'));
+            child: Text('خطأ في تشغيل التسجيل تحقق من اتصالك بالانترنت'),
+          );
         }
 
         final audioDuration = audioPlayerController.durationInMill.toDouble();
@@ -65,9 +89,11 @@ class _AudioPlayerViewState extends State<AudioPlayerView> {
             return Column(
               children: [
                 SizedBox(height: 12.h),
-                Text(widget.title,
-                    style: AppTextStyles.font16Weight400Red
-                        .copyWith(color: AppColors.primaryColor)),
+                Text(
+                  widget.title,
+                  style: AppTextStyles.font16Weight400Red
+                      .copyWith(color: AppColors.primaryColor),
+                ),
                 const SizedBox(height: 10),
                 Slider(
                   value: sliderTempValue ?? progress.clamp(0, audioDuration),
@@ -78,9 +104,7 @@ class _AudioPlayerViewState extends State<AudioPlayerView> {
                       sliderTempValue = value;
                     });
                   },
-                  onChangeStart: (value) {
-                    audioPlayerController.pause();
-                  },
+                  onChangeStart: (_) => audioPlayerController.pause(),
                   onChangeEnd: (value) {
                     audioPlayerController.seek(value.toInt());
                     sliderTempValue = null;
@@ -114,29 +138,136 @@ class _AudioPlayerViewState extends State<AudioPlayerView> {
                       ),
                     ),
                     const Spacer(),
-                    Text(_formatToDateTime(progress.toInt()),
-                        style: AppTextStyles.font16Weight400White.copyWith(
-                          color: Colors.black,
-                        )),
+                    Text(
+                      _formatToDateTime(progress.toInt()),
+                      style: AppTextStyles.font16Weight400White
+                          .copyWith(color: Colors.black),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                StreamBuilder(
-                  stream: audioPlayerController.playStatusStream,
-                  builder: (context, snapshot) {
-                    final bool isPlaying = snapshot.data ?? false;
-                    return PlayPauseButton(
-                      isPlaying: isPlaying,
-                      onTap: () {
-                        if (isPlaying) {
-                          audioPlayerController.pause();
+
+                // الأزرار
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        Icons.replay,
+                        color:
+                            isRepeating ? AppColors.primaryColor : Colors.black,
+                        size: 30,
+                      ),
+                      onPressed: () async {
+                        if (isRepeating) {
+                          // لو مفعل التكرار، نوقفه
+                          setState(() {
+                            isRepeating = false;
+                            repeatCount = 0;
+                          });
                         } else {
-                          audioPlayerController.play();
+                          // المستخدم يختار عدد مرات التكرار
+                          int? selected = await showDialog<int>(
+                            context: context,
+                            builder: (context) {
+                              int temp = maxRepeats;
+                              return AlertDialog(
+                                backgroundColor: AppColors.secondaryColor,
+                                title: const Text(
+                                  'عدد مرات التكرار',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                content: StatefulBuilder(
+                                  builder: (context, setInnerState) {
+                                    return Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Slider(
+                                          value: temp.toDouble(),
+                                          min: 1,
+                                          max: 10,
+                                          divisions: 9,
+                                          label: temp.toString(),
+                                          activeColor: AppColors.primaryColor,
+                                          inactiveColor: Colors.grey,
+                                          onChanged: (val) {
+                                            setInnerState(() {
+                                              temp = val.toInt();
+                                            });
+                                          },
+                                        ),
+                                        Text(
+                                          '$temp مرات',
+                                          style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold),
+                                        )
+                                      ],
+                                    );
+                                  },
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, null),
+                                    child: const Text('إلغاء',
+                                        style: TextStyle(
+                                            color: Colors.red,
+                                            fontWeight: FontWeight.bold)),
+                                  ),
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, temp),
+                                    child: const Text('تأكيد',
+                                        style: TextStyle(
+                                            color: AppColors.primaryColor,
+                                            fontWeight: FontWeight.bold)),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+
+                          if (selected != null) {
+                            setState(() {
+                              maxRepeats = selected;
+                              repeatCount = 0;
+                              isRepeating = true;
+                            });
+                          }
                         }
                       },
-                    );
-                  },
+                    ),
+                    const SizedBox(width: 10),
+                    StreamBuilder(
+                      stream: audioPlayerController.playStatusStream,
+                      builder: (context, snapshot) {
+                        final bool isPlaying = snapshot.data ?? false;
+                        return PlayPauseButton(
+                          isPlaying: isPlaying,
+                          onTap: () {
+                            if (isPlaying) {
+                              audioPlayerController.pause();
+                            } else {
+                              audioPlayerController.play();
+                            }
+                          },
+                        );
+                      },
+                    ),
+                  ],
                 ),
+
+                // نص العداد
+                if (isRepeating)
+                  Text(
+                    'تكرار ${repeatCount + 1} من $maxRepeats',
+                    style: AppTextStyles.font16Weight400White.copyWith(
+                        color: Colors.black, fontWeight: FontWeight.bold),
+                  ),
               ],
             );
           },
@@ -147,10 +278,7 @@ class _AudioPlayerViewState extends State<AudioPlayerView> {
 }
 
 String _formatToDateTime(int durationInMill) {
-  //2000 / (1000 * 60) = 00 minutes
   final int minutes = durationInMill ~/ Duration.millisecondsPerMinute;
-
-  //(2000 % 60000) / 1000 = 02 sec
   final int seconds = (durationInMill % Duration.millisecondsPerMinute) ~/
       Duration.millisecondsPerSecond;
 

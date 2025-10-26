@@ -320,6 +320,24 @@
       "languageVersion": "2.12"
     },
     {
+      "name": "os_detect",
+      "rootUri": "file:///C:/Users/osama/AppData/Local/Pub/Cache/hosted/pub.dev/os_detect-2.0.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
+      "name": "package_info_plus",
+      "rootUri": "file:///C:/Users/osama/AppData/Local/Pub/Cache/hosted/pub.dev/package_info_plus-9.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "package_info_plus_platform_interface",
+      "rootUri": "file:///C:/Users/osama/AppData/Local/Pub/Cache/hosted/pub.dev/package_info_plus_platform_interface-3.2.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
       "name": "path",
       "rootUri": "file:///C:/Users/osama/AppData/Local/Pub/Cache/hosted/pub.dev/path-1.9.1",
       "packageUri": "lib/",
@@ -554,6 +572,12 @@
       "languageVersion": "3.5"
     },
     {
+      "name": "upgrader",
+      "rootUri": "file:///C:/Users/osama/AppData/Local/Pub/Cache/hosted/pub.dev/upgrader-12.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
       "name": "url_launcher",
       "rootUri": "file:///C:/Users/osama/AppData/Local/Pub/Cache/hosted/pub.dev/url_launcher-6.3.2",
       "packageUri": "lib/",
@@ -630,6 +654,12 @@
       "rootUri": "file:///C:/Users/osama/AppData/Local/Pub/Cache/hosted/pub.dev/vector_math-2.1.4",
       "packageUri": "lib/",
       "languageVersion": "2.14"
+    },
+    {
+      "name": "version",
+      "rootUri": "file:///C:/Users/osama/AppData/Local/Pub/Cache/hosted/pub.dev/version-3.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
     },
     {
       "name": "video_player",

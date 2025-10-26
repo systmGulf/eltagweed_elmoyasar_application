@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../views/questions_screen.dart';
 import 'drawer_item.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -44,6 +45,17 @@ class CustomDrawer extends StatelessWidget {
                   ),
                   SizedBox(
                     height: 16.h,
+                  ),
+                  DrawerItem(
+                    image: 'assets/svg/question.svg',
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const QuestionsScreen())),
+                    title: 'بنك اسئله في التجويد',
+                    isCustomImage: true,
+                    imageWidth: 20.w,
+                    imageColor: AppColors.secondaryColor,
                   ),
                   DrawerItem(
                     imageWidth: 20.w,
@@ -89,23 +101,12 @@ class CustomDrawer extends StatelessWidget {
                     onTap: () => launchLinks(privacyPolicyLink, context),
                     title: 'سياسة الخصوصية',
                   ),
-                  Banner(
-                    message: "%خصم 50 ",
-                    location: BannerLocation.topEnd,
-                    color: Colors.grey.withOpacity(0),
-                    textStyle: AppTextStyles.font16Weight400White.copyWith(
-                      color: AppColors.secondaryColor,
-                      fontSize: 17.sp,
-                      fontWeight: FontWeight.bold,
-                      fontStyle: FontStyle.italic,
-                    ),
-                    child: DrawerItem(
-                      image: 'assets/svg/buy-book3.svg',
-                      isCustomImage: true,
-                      imageColor: AppColors.secondaryColor,
-                      onTap: () => launchLinks(buyTheBookLink, context),
-                      title: 'اطلب الكتاب',
-                    ),
+                  DrawerItem(
+                    image: 'assets/svg/buy-book3.svg',
+                    isCustomImage: true,
+                    imageColor: AppColors.secondaryColor,
+                    onTap: () => launchLinks(buyTheBookLink, context),
+                    title: 'اطلب الكتاب',
                   ),
                 ],
               ),
@@ -116,3 +117,4 @@ class CustomDrawer extends StatelessWidget {
     );
   }
 }
+// QuestionsScreen

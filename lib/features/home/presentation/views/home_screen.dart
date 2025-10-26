@@ -1,5 +1,6 @@
 import 'package:eltagweed_elmoyasar/features/home/presentation/views/matn_elgazarya_screen.dart';
 import 'package:eltagweed_elmoyasar/features/home/presentation/views/matn_tofet_elatfal_screen.dart';
+import 'package:eltagweed_elmoyasar/features/home/presentation/views/questions_screen.dart';
 import 'package:eltagweed_elmoyasar/features/home/presentation/widgets/tablet_home_screen_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -10,6 +11,7 @@ import '../../../../core/styles/app_colors.dart';
 import '../../../../core/styles/app_text_styles.dart';
 import '../widgets/competition_announcemnt.dart';
 import '../widgets/competition_widget.dart';
+import '../widgets/home_book_widget.dart';
 import '../widgets/home_grid_view.dart';
 
 var scaffoldKey = GlobalKey<ScaffoldState>();
@@ -48,7 +50,36 @@ class HomeScreen extends StatelessWidget {
                   verticalSpace(30),
                   Text("التجويد الميسر",
                       style: AppTextStyles.font36Weight700White),
-                  verticalSpace(36),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const QuestionsScreen()));
+                    },
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        HomeBookWidget(
+                            bookName: 'بنك اسئله في التجويد',
+                            onTap: () {},
+                            boxFit: BoxFit.fill,
+                            backgroundColor: AppColors.thirdColor,
+                            imagePath:
+                                "assets/images/8665c9b242c23e4c41be1268d8cf565a.jpg"),
+                        Positioned(
+                          top: 20.h,
+                          right: 20.w,
+                          child: Image.asset(
+                            "assets/images/welcome 1.png",
+                            width: 200.w,
+                            height: 200.h,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  verticalSpace(16),
                   LayoutBuilder(builder: (context, constraints) {
                     if (constraints.maxWidth < 600) {
                       return const MobileHomeGridView();
@@ -62,79 +93,31 @@ class HomeScreen extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: Column(
-                          children: [
-                            Text("متن الجزرية",
-                                style:
-                                    AppTextStyles.font20Weight700White.copyWith(
-                                  color: AppColors.secondaryColor,
-                                )),
-                            verticalSpace(10),
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const MatnElgazaryaScreen()));
-                              },
-                              child: Container(
-                                height: 180.h,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  color: AppColors.secondaryColor,
-                                  border: Border.all(
-                                      color: AppColors.secondaryColor,
-                                      width: 2.w),
-                                  image: const DecorationImage(
-                                    image: AssetImage(
-                                        "assets/images/elgzara.jpeg"),
-                                    fit: BoxFit.fill,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                        child: HomeBookWidget(
+                          bookName: "متن الجزرية",
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const MatnElgazaryaScreen()));
+                          },
+                          imagePath: "assets/images/elgzara.jpeg",
                         ),
                       ),
                       horizontalSpace(20),
                       Expanded(
-                        child: Column(
-                          children: [
-                            Text("متن التحفة الأطفال",
-                                style:
-                                    AppTextStyles.font20Weight700White.copyWith(
-                                  color: AppColors.secondaryColor,
-                                )),
-                            verticalSpace(10),
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const MatnTofetElatfalScreen()));
-                              },
-                              child: Container(
-                                height: 180.h,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  color: AppColors.secondaryColor,
-                                  border: Border.all(
-                                      color: AppColors.secondaryColor,
-                                      width: 2.w),
-                                  image: const DecorationImage(
-                                    image: AssetImage(
-                                      "assets/images/rawdt_elatfal.jpeg",
-                                    ),
-                                    fit: BoxFit.fill,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                          child: HomeBookWidget(
+                        bookName: "متن تحفة الأطفال",
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const MatnTofetElatfalScreen()));
+                        },
+                        imagePath: "assets/images/rawdt_elatfal.jpeg",
+                      )),
                     ],
                   ),
                   verticalSpace(20),
