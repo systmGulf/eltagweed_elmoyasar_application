@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:eltagweed_elmoyasar/core/styles/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -104,9 +105,15 @@ class _GroupsScreenState extends State<GroupsScreen> {
               borderRadius: BorderRadius.circular(14),
               child: Container(
                 decoration: BoxDecoration(
-                  color: secondaryColor,
+                  color: isDone
+                      ? const Color.fromARGB(255, 152, 235, 155)
+                      : secondaryColor,
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
+                    BoxShadow(
+                        color: AppColors.primaryColor.withOpacity(0.4),
+                        blurRadius: 6,
+                        offset: const Offset(0, 3)),
                     BoxShadow(
                         color: Colors.black.withOpacity(0.4),
                         blurRadius: 6,
