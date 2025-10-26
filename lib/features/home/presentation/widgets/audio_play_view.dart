@@ -40,7 +40,6 @@ class _AudioPlayerViewState extends State<AudioPlayerView> {
           audioPlayerController.play();
           setState(() {});
         } else {
-          // انتهت كل مرات التكرار → إيقاف وإخفاء النص
           setState(() {
             isRepeating = false;
             repeatCount = 0;

@@ -1,9 +1,185 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:shared_preferences/shared_preferences.dart';
 
+/// ====================
+/// COLORS & STYLES
+/// ====================
+const Color primaryColor = Color(0xFF202020);
+const Color secondaryColor = Color(0XffE2BE7F);
+const List<String> arabicOptionLetters = ['أ', 'ب', 'ج', 'د'];
+
+/// ====================
+/// Groups Screen
+/// ====================
+class GroupsScreen extends StatefulWidget {
+  const GroupsScreen({super.key});
+
+  @override
+  State<GroupsScreen> createState() => _GroupsScreenState();
+}
+
+class _GroupsScreenState extends State<GroupsScreen> {
+  List<dynamic> allQuestions = [];
+  int groupsCount = 0;
+  Map<int, bool> completed = {}; // groupIndex -> completed
+  bool loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _initAll();
+  }
+
+  Future<void> _initAll() async {
+    await _loadQuestions();
+    await _loadCompletion();
+    setState(() => loading = false);
+  }
+
+  Future<void> _loadQuestions() async {
+    final raw = await rootBundle.loadString('assets/tajweed_questions.json');
+    final data = json.decode(raw) as List<dynamic>;
+    allQuestions = data;
+    // groups of 50
+    groupsCount = (allQuestions.length / 50).ceil();
+  }
+
+  Future<void> _loadCompletion() async {
+    final prefs = await SharedPreferences.getInstance();
+    final Map<int, bool> tmp = {};
+    for (int i = 0; i < (allQuestions.length / 50).ceil(); i++) {
+      tmp[i] = prefs.getBool('group_completed_$i') ?? false;
+    }
+    setState(() {
+      completed = tmp;
+    });
+  }
+
+  // called after finishing a group to refresh completion states
+  Future<void> _refreshCompletion() async {
+    await _loadCompletion();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator(color: secondaryColor)),
+      );
+    }
+
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: GridView.builder(
+          itemCount: groupsCount,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 1.2,
+          ),
+          itemBuilder: (context, index) {
+            final isDone = completed[index] ?? false;
+            // build range text
+            final start = index * 50 + 1;
+            final end = ((index + 1) * 50).clamp(1, allQuestions.length);
+            return InkWell(
+              onTap: () async {
+                // open quiz screen and wait for return to refresh
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => TajweedQuizScreen(
+                      groupIndex: index,
+                      allQuestions: allQuestions,
+                    ),
+                  ),
+                );
+                // refresh completion flags when back
+                await _refreshCompletion();
+              },
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: secondaryColor,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withOpacity(0.4),
+                        blurRadius: 6,
+                        offset: const Offset(0, 3))
+                  ],
+                ),
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('المجموعة ${index + 1}',
+                        style: const TextStyle(
+                            color: primaryColor,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Text('$start - $end',
+                        style: const TextStyle(color: Colors.black87)),
+                    const SizedBox(height: 12),
+                    if (isDone)
+                      const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.check_circle, color: Colors.green),
+                          SizedBox(width: 6),
+                          Text('مكتمل',
+                              style: TextStyle(
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.bold)),
+                        ],
+                      )
+                    else
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryColor,
+                            foregroundColor: Colors.white),
+                        onPressed: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => TajweedQuizScreen(
+                                groupIndex: index,
+                                allQuestions: allQuestions,
+                              ),
+                            ),
+                          );
+                          await _refreshCompletion();
+                        },
+                        child: const Text('ابدأ'),
+                      )
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+/// ====================
+/// Quiz Screen (same UI as requested)
+/// ====================
 class TajweedQuizScreen extends StatefulWidget {
-  const TajweedQuizScreen({Key? key}) : super(key: key);
+  final int groupIndex;
+  final List<dynamic> allQuestions;
+
+  const TajweedQuizScreen({
+    super.key,
+    required this.groupIndex,
+    required this.allQuestions,
+  });
 
   @override
   State<TajweedQuizScreen> createState() => _TajweedQuizScreenState();
@@ -11,30 +187,25 @@ class TajweedQuizScreen extends StatefulWidget {
 
 class _TajweedQuizScreenState extends State<TajweedQuizScreen>
     with SingleTickerProviderStateMixin {
-  // الألوان الثابتة
-  static const Color primaryColor = Color(0xFF202020);
-  static const Color secondaryColor = Color(0XffE2BE7F);
-
   List<dynamic> _questions = [];
-  Map<int, int> _selected = {};
+  Map<int, int> _selected =
+      {}; // questionIndex -> optionIndex (local index 0..49)
   Set<int> _answered = {};
-  int _currentIndex = 0;
+  int _currentIndex = 0; // 0..(_questions.length-1)
   int _score = 0;
   bool _loading = true;
 
   late final AnimationController _animController;
   late final Animation<double> _fadeAnim;
 
-  final List<String> _arabicOptionLetters = ['أ', 'ب', 'ج', 'د'];
-
   @override
   void initState() {
     super.initState();
-    _loadQuestions();
     _animController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 250));
     _fadeAnim =
         CurvedAnimation(parent: _animController, curve: Curves.easeInOut);
+    _prepareGroup();
   }
 
   @override
@@ -43,11 +214,12 @@ class _TajweedQuizScreenState extends State<TajweedQuizScreen>
     super.dispose();
   }
 
-  Future<void> _loadQuestions() async {
-    final raw = await rootBundle.loadString('assets/tajweed_questions.json');
-    final data = json.decode(raw);
+  void _prepareGroup() {
+    // slice group from allQuestions
+    final start = widget.groupIndex * 50;
+    final end = (start + 50).clamp(0, widget.allQuestions.length);
+    _questions = widget.allQuestions.sublist(start, end);
     setState(() {
-      _questions = data;
       _loading = false;
     });
     _animController.forward();
@@ -68,6 +240,7 @@ class _TajweedQuizScreenState extends State<TajweedQuizScreen>
     });
 
     final isCorrect = chosen == correctAnswer;
+    // SnackBar on the right, Arabic text
     ScaffoldMessenger.of(context).removeCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -76,7 +249,7 @@ class _TajweedQuizScreenState extends State<TajweedQuizScreen>
         content: Directionality(
           textDirection: TextDirection.rtl,
           child: Text(
-            isCorrect ? 'صح — جزاك الله خير' : 'حاول مجدداً',
+            isCorrect ? 'صح جزاك الله خير ❤️' : 'خطأ انظر للإجابة الصحيحة',
             textAlign: TextAlign.right,
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
@@ -89,22 +262,28 @@ class _TajweedQuizScreenState extends State<TajweedQuizScreen>
 
   void _next() {
     if (_currentIndex < _questions.length - 1) {
-      setState(() {
-        _currentIndex++;
-      });
+      setState(() => _currentIndex++);
       _animController.forward(from: 0.0);
     } else {
-      _showResultDialog();
+      _onFinish();
     }
   }
 
   void _prev() {
     if (_currentIndex > 0) {
-      setState(() {
-        _currentIndex--;
-      });
+      setState(() => _currentIndex--);
       _animController.forward(from: 0.0);
     }
+  }
+
+  Future<void> _onFinish() async {
+    await _markGroupCompleted();
+    _showResultDialog();
+  }
+
+  Future<void> _markGroupCompleted() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('group_completed_${widget.groupIndex}', true);
   }
 
   void _showResultDialog() {
@@ -119,9 +298,8 @@ class _TajweedQuizScreenState extends State<TajweedQuizScreen>
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: const Center(
-            child:
-                Text('النتيجة النهائية', style: TextStyle(color: Colors.white)),
-          ),
+              child: Text('النتيجة النهائية',
+                  style: TextStyle(color: Colors.white))),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -144,11 +322,9 @@ class _TajweedQuizScreenState extends State<TajweedQuizScreen>
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-              },
+              onPressed: () => Navigator.pop(ctx),
               child:
-                  const Text('إغلاق', style: TextStyle(color: Colors.white70)),
+                  const Text('مراجعة', style: TextStyle(color: Colors.white)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: secondaryColor),
@@ -179,279 +355,227 @@ class _TajweedQuizScreenState extends State<TajweedQuizScreen>
     const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
     final s = n.toString();
     final sb = StringBuffer();
-    for (var ch in s.split('')) {
-      sb.write(arabicDigits[int.parse(ch)]);
-    }
+    for (var ch in s.split('')) sb.write(arabicDigits[int.parse(ch)]);
     return sb.toString();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return const Scaffold(
+          body:
+              Center(child: CircularProgressIndicator(color: secondaryColor)));
+    }
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: primaryColor,
         appBar: AppBar(
+          surfaceTintColor: Colors.transparent,
+          leading: const BackButton(color: Colors.white),
+          title: Text(
+              'المجموعة ${widget.groupIndex + 1}, السؤال ${_arabicIndex(_currentIndex + 1)}',
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16)),
           backgroundColor: primaryColor,
-          centerTitle: true,
-          title: const Text(
-            'اختبار التجويد',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: Center(
-                child: Text(
-                  _questions.isEmpty
-                      ? '0/0'
-                      : '${_currentIndex + 1}/${_questions.length}',
-                  style: const TextStyle(color: Colors.white70),
-                ),
-              ),
-            )
-          ],
         ),
-        body: _loading
-            ? const Center(
-                child: CircularProgressIndicator(color: Colors.white))
-            : _questions.isEmpty
-                ? const Center(
-                    child: Text('لا توجد أسئلة',
-                        style: TextStyle(color: Colors.white)))
-                : Padding(
-                    padding: const EdgeInsets.all(14.0),
+        body: Padding(
+          padding: const EdgeInsets.all(14.0),
+          child: Column(
+            children: [
+              LinearProgressIndicator(
+                value: (_currentIndex + 1) / _questions.length,
+                minHeight: 8,
+                backgroundColor: Colors.white12,
+                valueColor: const AlwaysStoppedAnimation<Color>(secondaryColor),
+              ),
+              const SizedBox(height: 12),
+              FadeTransition(
+                opacity: _fadeAnim,
+                child: Card(
+                  color: const Color(0xFF1F1F1F),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        LinearProgressIndicator(
-                          value: (_currentIndex + 1) / _questions.length,
-                          minHeight: 8,
-                          backgroundColor: Colors.white12,
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                              secondaryColor),
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 20,
+                              backgroundColor: secondaryColor,
+                              child: Text(_arabicIndex(_currentIndex + 1),
+                                  style: const TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold)),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                _questions[_currentIndex]['question'] ?? '',
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 14),
+                        ...List.generate(
+                            (_questions[_currentIndex]['options'] as List)
+                                .length, (optIndex) {
+                          final optionText =
+                              _questions[_currentIndex]['options'][optIndex];
+                          final correct =
+                              _questions[_currentIndex]['correct_answer'];
+                          final isSelected =
+                              _selected[_currentIndex] == optIndex;
+                          final hasAnswered = _answered.contains(_currentIndex);
 
-                        FadeTransition(
-                          opacity: _fadeAnim,
-                          child: Card(
-                            color: const Color(0xFF1F1F1F),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14)),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Row(
-                                    children: [
-                                      CircleAvatar(
-                                        radius: 20,
-                                        backgroundColor: secondaryColor,
-                                        child: Text(
-                                          _arabicIndex(_currentIndex + 1),
-                                          style: const TextStyle(
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Text(
-                                          _questions[_currentIndex]
-                                                  ['question'] ??
-                                              '',
-                                          style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w600),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 14),
-                                  ...List.generate(
-                                    (_questions[_currentIndex]['options']
-                                            as List)
-                                        .length,
-                                    (optIndex) {
-                                      final optionText =
-                                          _questions[_currentIndex]['options']
-                                              [optIndex];
-                                      final correct = _questions[_currentIndex]
-                                          ['correct_answer'];
-                                      final isSelected =
-                                          _selected[_currentIndex] == optIndex;
-                                      final hasAnswered =
-                                          _answered.contains(_currentIndex);
+                          Color borderColor = Colors.white24;
+                          Color textColor = Colors.white;
+                          Color fillColor = Colors.transparent;
 
-                                      Color borderColor = Colors.white24;
-                                      Color textColor = Colors.white;
-                                      Color fillColor = Colors.transparent;
+                          if (hasAnswered) {
+                            if (optionText == correct) {
+                              borderColor = Colors.green;
+                              textColor = Colors.green;
+                              fillColor = Colors.green.withOpacity(0.08);
+                            } else if (isSelected && optionText != correct) {
+                              borderColor = Colors.red;
+                              textColor = Colors.red;
+                              fillColor = Colors.red.withOpacity(0.06);
+                            } else {
+                              borderColor = Colors.white12;
+                              textColor = Colors.white70;
+                            }
+                          }
 
-                                      if (hasAnswered) {
-                                        if (optionText == correct) {
-                                          borderColor = Colors.green;
-                                          textColor = Colors.green;
-                                          fillColor =
-                                              Colors.green.withOpacity(0.08);
-                                        } else if (isSelected &&
-                                            optionText != correct) {
-                                          borderColor = Colors.red;
-                                          textColor = Colors.red;
-                                          fillColor =
-                                              Colors.red.withOpacity(0.06);
-                                        } else {
-                                          borderColor = Colors.white12;
-                                          textColor = Colors.white70;
-                                        }
-                                      }
-
-                                      return Container(
-                                        margin: const EdgeInsets.symmetric(
-                                            vertical: 6),
-                                        child: ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: fillColor,
-                                            side:
-                                                BorderSide(color: borderColor),
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 14, horizontal: 12),
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(10)),
-                                            elevation: 0,
-                                          ),
-                                          onPressed: hasAnswered
-                                              ? null
-                                              : () {
-                                                  _selectOption(
-                                                      _currentIndex, optIndex);
-                                                },
-                                          child: Row(
-                                            textDirection: TextDirection.rtl,
-                                            children: [
-                                              Container(
-                                                width: 34,
-                                                height: 34,
-                                                decoration: const BoxDecoration(
-                                                  color: secondaryColor,
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                alignment: Alignment.center,
-                                                child: Text(
-                                                  _arabicOptionLetters[
-                                                      optIndex],
-                                                  style: const TextStyle(
-                                                      color: Colors.black,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 12),
-                                              Expanded(
-                                                child: Text(
-                                                  optionText,
-                                                  textAlign: TextAlign.right,
-                                                  style: TextStyle(
-                                                      color: textColor,
-                                                      fontSize: 16),
-                                                ),
-                                              ),
-                                              if (hasAnswered &&
-                                                  optionText == correct)
-                                                const Icon(Icons.check_circle,
-                                                    color: Colors.green),
-                                              if (hasAnswered &&
-                                                  isSelected &&
-                                                  optionText != correct)
-                                                const Icon(Icons.cancel,
-                                                    color: Colors.red),
-                                            ],
-                                          ),
-                                        ),
-                                      );
+                          return Container(
+                            margin: const EdgeInsets.symmetric(vertical: 6),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: fillColor,
+                                side: BorderSide(color: borderColor),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 14, horizontal: 12),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10)),
+                                elevation: 0,
+                              ),
+                              onPressed: hasAnswered
+                                  ? null
+                                  : () {
+                                      _selectOption(_currentIndex, optIndex);
                                     },
+                              child: Row(
+                                textDirection: TextDirection.rtl,
+                                children: [
+                                  Container(
+                                    width: 34,
+                                    height: 34,
+                                    decoration: const BoxDecoration(
+                                        color: secondaryColor,
+                                        shape: BoxShape.circle),
+                                    alignment: Alignment.center,
+                                    child: Text(arabicOptionLetters[optIndex],
+                                        style: const TextStyle(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold)),
                                   ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                      child: Text(optionText,
+                                          textAlign: TextAlign.right,
+                                          style: TextStyle(
+                                              color: textColor, fontSize: 16))),
+                                  if (hasAnswered && optionText == correct)
+                                    const Padding(
+                                        padding: EdgeInsets.only(left: 8.0),
+                                        child: Icon(Icons.check_circle,
+                                            color: Colors.green)),
+                                  if (hasAnswered &&
+                                      isSelected &&
+                                      optionText != correct)
+                                    const Padding(
+                                        padding: EdgeInsets.only(left: 8.0),
+                                        child: Icon(Icons.cancel,
+                                            color: Colors.red)),
                                 ],
                               ),
                             ),
-                          ),
-                        ),
-                        const Spacer(),
-
-                        // أزرار التحكم
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: _prev,
-                                icon: const Icon(Icons.arrow_back_ios_new,
-                                    color: Colors.white70),
-                                label: const Text('السابق',
-                                    style: TextStyle(color: Colors.white70)),
-                                style: OutlinedButton.styleFrom(
-                                  side: const BorderSide(color: Colors.white12),
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 14),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: _next,
-                                icon: const Icon(Icons.arrow_forward_ios,
-                                    color: Colors.black),
-                                label: Text(
-                                    _currentIndex == _questions.length - 1
-                                        ? 'أنهِ الاختبار'
-                                        : 'التالي'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: secondaryColor,
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 14),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-
-                        // زر عرض النتيجة الجديد
-                        ElevatedButton(
-                          onPressed: _showResultDialog,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: secondaryColor,
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 16),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
-                          ),
-                          child: const Text(
-                            'عرض النتيجة الحالية',
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-
-                        // ملخص سريع
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                                'الإجابات: ${_answered.length}/${_questions.length}',
-                                style: const TextStyle(color: Colors.white70)),
-                            Text('الدرجة: $_score',
-                                style: const TextStyle(color: Colors.white70)),
-                          ],
-                        )
+                          );
+                        }),
                       ],
                     ),
                   ),
+                ),
+              ),
+              const Spacer(),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _prev,
+                      icon: const Icon(Icons.arrow_back_ios_new,
+                          color: Colors.white70),
+                      label: const Text('السابق',
+                          style: TextStyle(color: Colors.white70)),
+                      style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.white12),
+                          padding: const EdgeInsets.symmetric(vertical: 14)),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _next,
+                      icon: const Icon(Icons.arrow_forward_ios,
+                          color: Colors.black),
+                      label: Text(
+                          _currentIndex == _questions.length - 1
+                              ? 'أنهِ الاختبار'
+                              : 'التالي',
+                          style: const TextStyle(color: Colors.black)),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: secondaryColor,
+                          padding: const EdgeInsets.symmetric(vertical: 14)),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: _showResultDialog,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: secondaryColor,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+                child: const Text('عرض النتيجة الحالية',
+                    style: TextStyle(
+                        color: Colors.black, fontWeight: FontWeight.bold)),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('الإجابات: ${_answered.length}/${_questions.length}',
+                      style: const TextStyle(color: Colors.white70)),
+                  Text('الدرجة: $_score',
+                      style: const TextStyle(color: Colors.white70)),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

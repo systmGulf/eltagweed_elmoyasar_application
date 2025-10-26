@@ -26,7 +26,7 @@ class QuestionsScreen extends StatelessWidget {
           SizedBox(),
         ],
       ),
-      body: const TajweedQuizScreen(),
+      body: const GroupsScreen(),
     );
   }
 }

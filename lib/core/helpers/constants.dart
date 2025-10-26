@@ -24,7 +24,7 @@ final List<String> titles = [
 
 const String contactUsLink = 'https://wa.me/201220652762?text=السلام عليكم';
 const String appLink =
-    "https://play.google.com/store/apps/details?id=com.eltagweed_elmoyasar&pcampaignid=web_share";
+    "https://play.google.com/store/apps/details?id=com.eltagweed_elmoyasar&hl=ar";
 const String privacyPolicyLink =
     'https://sites.google.com/view/tayseer-privacy-policy/%D8%A7%D9%84%D8%B5%D9%81%D8%AD%D8%A9-%D8%A7%D9%84%D8%B1%D8%A6%D9%8A%D8%B3%D9%8A%D8%A9';
 const String buyTheBookLink = 'https://wa.me/201220652762?text=السلام عليكم';

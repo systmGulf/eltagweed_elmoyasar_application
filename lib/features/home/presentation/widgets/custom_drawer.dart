@@ -87,7 +87,7 @@ class CustomDrawer extends StatelessWidget {
                   ),
                   DrawerItem(
                     image: 'assets/svg/share.svg',
-                    onTap: () => shareAppLink,
+                    onTap: () => shareAppLink(),
                     title: 'شارك التطبيق',
                     isCustomImage: true,
                     imageWidth: 20.w,
