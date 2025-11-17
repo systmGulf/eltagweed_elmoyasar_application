@@ -3,13 +3,22 @@ import 'package:eltagweed_elmoyasar/features/home/presentation/views/tofet_elatf
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart' show SfPdfViewer;
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/methods/internet_conection.dart';
 import '../../../../core/styles/app_colors.dart';
 import '../../../../core/styles/app_text_styles.dart';
+import '../widgets/single_video_container.dart';
 
-class MatnTofetElatfalScreen extends StatelessWidget {
+class MatnTofetElatfalScreen extends StatefulWidget {
   const MatnTofetElatfalScreen({super.key});
 
+  @override
+  State<MatnTofetElatfalScreen> createState() => _MatnTofetElatfalScreenState();
+}
+
+class _MatnTofetElatfalScreenState extends State<MatnTofetElatfalScreen> {
+  bool isLoading = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,6 +95,38 @@ class MatnTofetElatfalScreen extends StatelessWidget {
                   ],
                 ),
               ),
+            ),
+            SingleVideoContainer(
+              image: const AssetImage('assets/images/hqdefault.jpg'),
+              title: 'شرح متن تحفة الأطفال',
+              subtitle: 'Mohammed Hamza | التَجـويِد الـمُـيـسَّـر ',
+              onTap: () async {
+                isLoading = true;
+
+                setState(() {});
+                var internet = await CommonMethods().checkConnectivity(context);
+                if (internet) {
+                  if (await launchUrl(Uri.parse(
+                      'https://youtube.com/playlist?list=PLDO2GIcBczhk7T6VH5hTYokGyN0BHVVCC&si=Zqbar3k2ee_3tNim'))) {
+                    isLoading = false;
+                    setState(() {});
+                    throw Exception('Could not launch ');
+                  }
+                } else {
+                  isLoading = false;
+                  setState(() {});
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      backgroundColor: AppColors.secondaryColor,
+                      content: Text(
+                        'لا يوجد اتصال بالانترنت',
+                        style: AppTextStyles.font16Weight400Red,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  );
+                }
+              },
             )
           ],
         ));
